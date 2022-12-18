@@ -1,0 +1,126 @@
+--1.Load the given dataset into snowflake with a primary key to Order Date column. 
+
+CREATE or replace table PY_Sales_Data
+(
+order_id string,
+order_date  string Primary Key, -- created table with order_date as primary key
+ship_date string,
+ship_mode VARCHAR2(50),	
+customer_name VARCHAR2(50),	
+segment VARCHAR2(50),
+state VARCHAR2(50),	
+country VARCHAR2(50),
+market VARCHAR2(50),	
+region	VARCHAR2(50),
+product_id VARCHAR2(60),	
+category VARCHAR2(50),	
+sub_category VARCHAR2(50),	
+product_name string,	
+sales	VARCHAR2(50),
+quantity VARCHAR2(50),	
+discount VARCHAR2(50),	
+profit	VARCHAR2(50),
+shipping_cost VARCHAR2(50),	
+order_priority VARCHAR2(50),
+year VARCHAR2(50)
+);
+
+describe  table PY_Sales_Data;
+
+select * from PY_Sales_Data;
+
+----------------------------------------------------------
+
+--2.Change the Primary key to Order Id Column. 
+
+-- To change the Primary Key first we need to drop the earlier Primary Key
+
+ALTER TABLE PY_Sales_Data
+DROP PRIMARY KEY;
+
+-- Now add primary key to Order_id column
+
+ALTER TABLE PY_Sales_Data
+add primary key (order_id);
+
+----------------------------------------------------------------------
+
+--3.Check the data type for Order date and Ship date and mention in what data type it should be? 
+-- the data type for Order date and Ship date is STRING, we need to change it to date datatype
+
+CREATE OR REPLACE TABLE PY_Sales_Data_copy AS
+SELECT*FROM PY_Sales_Data;
+
+select * from PY_Sales_Data_copy;
+
+CREATE OR REPLACE TABLE PY_Sales_Data_copy AS
+SELECT*,
+TO_CHAR(DATE(ORDER_DATE,'dd-mm-YYYY'),'YYYY-MM-DD') AS ORDER_DATE_new
+FROM PY_Sales_Data_copy;
+
+CREATE OR REPLACE TABLE PY_Sales_Data_copy  AS
+SELECT*,
+TO_CHAR(DATE(SHIP_DATE,'MM-DD-YYYY'),'YYYY-MM-DD') AS SHIP_DATE_new
+FROM PY_Sales_Data_copy;
+
+-----------------------------------------------------------------
+--4.Create a new column called order_extract and extract the number after the last ‘–‘from Order ID column. 
+
+CREATE OR REPLACE TABLE  PY_Sales_Data_copy AS
+SELECT *, substring(ORDER_ID, -4, 4) AS order_extract from PY_Sales_Data_copy;
+
+------------------------------------------------------------------------------------------------------
+
+--5,Create a new column called Discount Flag and categorize it based on discount. Use ‘Yes’ if the discount is greater than zero else ‘No’. 
+
+CREATE OR REPLACE TABLE PY_Sales_Data_copy AS
+SELECT *,
+      CASE
+        WHEN DISCOUNT>0 THEN 'Yes'
+        ELSE 'False'
+      END AS VALID_DISCOUNT
+FROM PY_Sales_Data_copy;
+
+SELECT*FROM PY_Sales_Data_copy;
+
+----------------------------------------------------------------------------------------------------
+
+--6.Create a new column called process days and calculate how many days it takes for each order id to process from the order to its shipment. 
+
+CREATE OR REPLACE TABLE PY_Sales_Data_copy AS
+SELECT*,
+DATEDIFF('days',ORDER_DATE_new,SHIP_DATE_new) as process_days
+FROM  PY_Sales_Data_copy;
+
+-----------------------------------------------------------------------------------------------
+
+--7.	Create a new column called Rating and then based on the Process dates give rating like given below. 
+ 
+--a.	If process days less than or equal to 3days then rating should be 5 
+--b.	If process days are greater than 3 and less than or equal to 6 then rating should be 4 
+--c.	If process days are greater than 6 and less than or equal to 10 then rating should be 3 
+--d.	If process days are greater than 10 then the rating should be 2. 
+
+
+CREATE OR REPLACE TABLE PY_Sales_Data_copy  AS
+SELECT*, 
+    CASE
+       WHEN process_days <=3 THEN 5
+       WHEN process_days BETWEEN 4 AND 6 THEN 4
+       WHEN process_daysBETWEEN 7 AND 10 THEN 3
+       ELSE 2
+     END AS RATING
+FROM PY_Sales_Data_copy;
+
+
+
+
+
+
+
+
+
+
+
+
+
